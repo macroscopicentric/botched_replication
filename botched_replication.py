@@ -1,51 +1,124 @@
 import nltk
 import random
 import collections
+import time
 
 class ParsedCorpus(object):
 
-	def __init__(self, file):
-		with open(file) as f:
+	def __init__(self, filename):
+		self.filename = filename
+		with open(filename) as f:
 			self.raw_text = f.read()
 
-		self.tokens = nltk.word_tokenize(self.raw_text)
-		self.text = nltk.pos_tag(self.tokens)
+		# Using word_tokenize() on a list of sentences from sent_tokenize()
+		# instead of the raw text because this is supposed to be more efficient,
+		# but requires flattening the resulting list of lists.
+		self.tokens = sum(map(nltk.word_tokenize, nltk.sent_tokenize(self.raw_text)), [])
 
-		self.pos_dictionary = collections.defaultdict(list)
-		for word_and_pos in self.text:
+
+	def words_with_pos(self):
+		'''
+		Build a list of tuples where the first element of each tuple is a token
+		and the second element is its part of speech. This is a method and not
+		an attribute because it should change every time self.tokens changes. 
+		'''
+		return nltk.pos_tag(self.tokens)
+
+
+	def pos_dictionary(self, words_with_pos):
+		'''
+		Build a dictionary where the keys are the parts of speech and the
+		values are lists of all words from the corpus that are that POS. This
+		is a method and not an attribute because it should change every time
+		self.tokens changes.
+		'''
+		pos_dictionary = collections.defaultdict(list)
+		for word_and_pos in self.words_with_pos():
 			word, pos = word_and_pos
-			if pos.isalpha():
-				self.pos_dictionary[pos].append(word)
+			# Edge case: 'p' ends up in the tokens list multiple times because
+			# of the <p> tags. Don't include those in the pos_dictionary.
+			if word.isalpha() and word != 'p':
+				pos_dictionary[pos].append(word)
+		return pos_dictionary
 
 
-	def word_to_mutate(self):
-		index = random.randrange(0, len(self.text))
-		word, pos = self.text[index]
+	def word_to_mutate(self, words_with_pos):
+		'''
+		Pick a word from the corpus to mutate and remember its index.
+		'''
+		index = random.randrange(0, len(words_with_pos))
+		word, pos = words_with_pos[index]
 
-		if not pos.isalpha():
-			word, pos, index = self.find_word_to_mutate(self)
+		# Don't bother mutating punctuation. That's boring.
+		if not word.isalpha():
+			word, pos, index = self.word_to_mutate(words_with_pos)
 
 		return word, pos, index
 
 
 	def mutate_word(self):
-		word_to_replace, pos, index = self.word_to_mutate()
-		replacement = random.choice(self.pos_dictionary[pos])
-		self.tokens[index] = replacement
+		'''
+		Pick a word from the corpus and replace it with another word from the
+		corpus that's the same part of speech.
+		'''
+		words_with_pos = self.words_with_pos()
+		original_word, pos, index = self.word_to_mutate(words_with_pos)
+
+		replacement = random.choice(self.pos_dictionary(words_with_pos)[pos])
+		formatted_replacement = self.format_replacement_word(replacement, original_word)
+
+		self.tokens[index] = formatted_replacement
+		return "s/{0}/{1}".format(original_word, formatted_replacement), pos
+
+
+	def format_replacement_word(self, replacement_word, original_word):
+		'''
+		Helper method to normalize some side effects of minimal token
+		formatting, including ensuring the replacement word is cased the same
+		way as the original word.
+		'''
+		if original_word.islower():
+			formatted_replacement = replacement_word.lower()
+		else:
+			formatted_replacement = replacement_word.capitalize()
+
+		# Edge case: default Penn Treebank tokenizer doesn't always make periods
+		# at the end of sentences into separate tokens.
+		if '.' in original_word and not '.' in formatted_replacement:
+			formatted_replacement += '.'
+
+		if '.' not in original_word and '.' in formatted_replacement:
+			formatted_replacement = formatted_replacement.replace('.', '')
+
+		return formatted_replacement
+
 
 	def untokenize(self):
+		'''
+		Reverse the effects of NLTK tokenization.
+		'''
 		rejoined_text = ' '.join(self.tokens)
 		punctuation = ["'", '"', '!', '.', ',', ';', ':', '?']
 		for mark in punctuation:
 			rejoined_text = rejoined_text.replace(" {0}".format(mark), mark).replace("`` ", ' "').replace("''", '"')
 		rejoined_text = rejoined_text.replace("( ", "(").replace(" )", ")")
+		rejoined_text = rejoined_text.replace("< p > ", "<p>").replace(" < /p >", "</p>")
 		return rejoined_text
 
+
 	def mutate(self):
-		self.mutate_word()
+		'''
+		Change a word and save the entirety of the new text. Return the change
+		for the curious/debugging.
+		'''
+		newest_change = self.mutate_word()
 		modified_text = self.untokenize()
-		return modified_text
+		with open('modified_' + self.filename, 'w') as f:
+			f.write(modified_text)
+		return newest_change
 
 
-text = ParsedCorpus('library_of_babel.txt')
-print text.mutate()
+text = ParsedCorpus('library_of_babel.html')
+while True:
+	print text.mutate()
+	time.sleep(5)
