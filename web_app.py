@@ -11,7 +11,7 @@ def index():
 
 @app.route('/newest_change')
 def fetch_newest_change():
-	with open('library_of_babel_changes.csv', 'r') as f:
+	with open('modified_library_of_babel_changes.csv', 'r') as f:
 		csvreader = csv.reader(f)
 		rows = []
 		for row in csvreader:
