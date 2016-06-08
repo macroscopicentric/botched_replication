@@ -5,6 +5,19 @@ import time
 import csv
 import re
 
+# Based on my best estimate of a pandoravirus's mutation rate. Mutation rates
+# vary widely between taxa. I arbitrarily picked pandoraviruses because a) I
+# wanted something fast enough to watch, and viruses have some of the fastest
+# mutation rates; b) the name is awesome; and c) memes are viral too, which is
+# the idea I wanted to explore.
+
+# Base pairs: 2,200,000 (https://en.wikipedia.org/wiki/Pandoravirus)
+# Replication cycle: 12.5 hours (avg) (http://science.sciencemag.org/content/341/6143/281.full)
+# Rate of replication: .22 per generation (generic, based on https://en.wikipedia.org/wiki/Mutation_rate)
+# Timespan between mutations: 56.8 hours
+# Timespan sped up by x1000: 3.4 min
+MUTATION_RATE_IN_SECONDS = 204
+
 class ParsedCorpus(object):
 
 	def __init__(self, filename):
@@ -143,4 +156,4 @@ class ParsedCorpus(object):
 text = ParsedCorpus('library_of_babel.html')
 while True:
 	print text.mutate()
-	time.sleep(5)
+	time.sleep(MUTATION_RATE_IN_SECONDS)
