@@ -16,7 +16,12 @@ def fetch_newest_change():
 		rows = []
 		for row in csvreader:
 			rows.append(row)
-	newest_change = rows[-1]
+
+	if len(rows) > 0:
+		newest_change = rows[-1]
+	else:
+		newest_change = ''
+
 	return jsonify(newest_change)
 
 if __name__ == '__main__':
