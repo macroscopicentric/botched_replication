@@ -4,6 +4,7 @@ import collections
 import time
 import csv
 import re
+import sys
 
 # Based on my best estimate of a pandoravirus's mutation rate. Mutation rates
 # vary widely between taxa. I arbitrarily picked pandoraviruses because a) I
@@ -15,7 +16,7 @@ import re
 # Replication cycle: 12.5 hours (avg) (http://science.sciencemag.org/content/341/6143/281.full)
 # Rate of replication: .22 per generation (generic, based on https://en.wikipedia.org/wiki/Mutation_rate)
 # Timespan between mutations: 56.8 hours
-# Timespan sped up by x1000: 3.4 min
+# Timespan sped up by x1000: 3.4 min (because we all have lives to live)
 MUTATION_RATE_IN_SECONDS = 204
 
 class ParsedCorpus(object):
@@ -153,7 +154,9 @@ class ParsedCorpus(object):
 		return newest_change
 
 
-text = ParsedCorpus('library_of_babel.html')
+# Pass in the text file name so I can swap easily in Heroku between the original
+# text and the modified text without having to modify this script.
+text = ParsedCorpus(sys.argv[1])
 while True:
 	print text.mutate()
 	time.sleep(MUTATION_RATE_IN_SECONDS)

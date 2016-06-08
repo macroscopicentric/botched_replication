@@ -1,4 +1,3 @@
+modified*.html
+*changes.csv
 *.pyc
-*.txt
-*library_of_babel.html
-*.csv
