@@ -2,6 +2,8 @@ import nltk
 import random
 import collections
 import time
+import csv
+import re
 
 class ParsedCorpus(object):
 
@@ -68,7 +70,7 @@ class ParsedCorpus(object):
 		formatted_replacement = self.format_replacement_word(replacement, original_word)
 
 		self.tokens[index] = formatted_replacement
-		return "s/{0}/{1}".format(original_word, formatted_replacement), pos
+		return {'original': original_word, 'replacement': formatted_replacement, 'index': index}
 
 
 	def format_replacement_word(self, replacement_word, original_word):
@@ -106,15 +108,35 @@ class ParsedCorpus(object):
 		return rejoined_text
 
 
+	def save_mutated_text(self):
+		'''
+		Save the current version of the text with all changes.
+		'''
+		modified_text_filename = 'modified_' + self.filename
+		modified_text = self.untokenize()
+		with open(modified_text_filename, 'w') as f:
+			f.write(modified_text)
+
+
+	def save_newest_change(self, newest_change):
+		'''
+		Save the newest change as a row in a csv file.
+		'''
+		filename_without_extension = re.sub(r'\..+', '', self.filename)
+		changes_filename = filename_without_extension + '_changes.csv'
+		with open(changes_filename, 'a') as f:
+			csvwriter = csv.writer(f)
+			csvwriter.writerow([newest_change['original'], newest_change['replacement'], newest_change['index']])
+
+
 	def mutate(self):
 		'''
-		Change a word and save the entirety of the new text. Return the change
-		for the curious/debugging.
+		Change a word and save the entirety of the new text. Record the change
+		in a separate file.
 		'''
 		newest_change = self.mutate_word()
-		modified_text = self.untokenize()
-		with open('modified_' + self.filename, 'w') as f:
-			f.write(modified_text)
+		self.save_mutated_text()
+		self.save_newest_change(newest_change)
 		return newest_change
 
 
