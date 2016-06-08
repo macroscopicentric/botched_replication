@@ -126,9 +126,8 @@ class ParsedCorpus(object):
 		'''
 		Save the current version of the text with all changes.
 		'''
-		modified_text_filename = 'modified_' + self.filename
 		modified_text = self.untokenize()
-		with open(modified_text_filename, 'w') as f:
+		with open(self.filename, 'w') as f:
 			f.write(modified_text)
 
 
