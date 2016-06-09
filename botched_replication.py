@@ -129,6 +129,7 @@ class ParsedCorpus(object):
 		modified_text = self.untokenize()
 		with open(self.filename, 'w') as f:
 			f.write(modified_text)
+		return self.filename
 
 
 	def save_newest_change(self, newest_change):
@@ -140,6 +141,7 @@ class ParsedCorpus(object):
 		with open(changes_filename, 'a') as f:
 			csvwriter = csv.writer(f)
 			csvwriter.writerow([newest_change['original'], newest_change['replacement'], newest_change['index']])
+		return changes_filename
 
 
 	def mutate(self):
@@ -148,9 +150,10 @@ class ParsedCorpus(object):
 		in a separate file.
 		'''
 		newest_change = self.mutate_word()
-		self.save_mutated_text()
-		self.save_newest_change(newest_change)
-		return newest_change
+		filename = self.save_mutated_text()
+		changes_filename = self.save_newest_change(newest_change)
+		summary = "Saved change {0} to the changes log {1}. Current modified text file is named {2}.".format(newest_change, changes_filename, filename)
+		return summary
 
 
 # Pass in the text file name so I can swap easily in Heroku between the original
