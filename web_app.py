@@ -1,25 +1,24 @@
 from flask import Flask, render_template, Markup,jsonify
-import csv
+from botched_replication import Corpus
+
+import redis
+import os
 
 app = Flask(__name__)
 
+r = redis.from_url(os.environ.get('REDIS_URL'))
+text = Corpus(r, 'library_of_babel.html')
+
 @app.route('/')
 def index():
-	with open('modified_library_of_babel.html', 'r') as f:
-		current_text = f.read()
+	current_text = text.fetch_current_text()
 	return render_template('index.html', modified_text=Markup(current_text))
 
 @app.route('/newest_change')
 def fetch_newest_change():
-	with open('modified_library_of_babel_changes.csv', 'r') as f:
-		csvreader = csv.reader(f)
-		rows = []
-		for row in csvreader:
-			rows.append(row)
-
-	newest_change = rows[-1]
+	newest_change = text.fetch_newest_change()
 	return jsonify(newest_change)
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0')
-    app.run(debug=True)
+    app.run(host='0.0.0.0')
+    # app.run(debug=True)
