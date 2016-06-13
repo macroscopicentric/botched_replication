@@ -100,8 +100,9 @@ class Corpus(object):
 		index = random.randrange(0, len(words_with_pos))
 		word, pos = words_with_pos[index]
 
-		# Don't bother mutating punctuation. That's boring.
-		if not word.isalpha():
+		# Don't bother mutating punctuation. That's boring. Also don't mutate
+		# 'p', because that's the middle of a paragraph tag from the HTML.
+		if not word.isalpha() or word == 'p':
 			word, pos, index = self.word_to_mutate(words_with_pos)
 
 		return word, pos, index
