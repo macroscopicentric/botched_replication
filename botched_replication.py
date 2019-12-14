@@ -43,6 +43,7 @@ class Corpus(object):
 			self.tokens = self.tokenize(modified_text)
 		else:
 			self.tokens = self.tokenize(raw_text)
+			self.save_mutated_text()
 
 
 	def tokenize(self, text):
