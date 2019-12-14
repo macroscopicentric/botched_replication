@@ -10,7 +10,34 @@
 <body>
 	<h1>The Library of Babel</h1>
 	<h2>Jorge Luis Borges</h2>
-	<div>{{modified_text}}</div>
+	<div id="current_text">{{modified_text}}</div>
 </body>
+
+<script type="text/javascript">
+	// Parse full text, update single word, unparse and reinsert text.
+	function updateText(new_word, index) {
+		var current_text = document.getElementById('current_text');
+		console.log('Text before update:', current_text);
+		// Tokenize using RiTa
+		// Untokenize
+		// roomP.innerHTML = modified_text;
+	}
+
+	// GET /newest_change from server
+	function hitServer () {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', '/newest_change', true);
+		xhr.setRequestHeader('Content-type', 'text/plain');
+		xhr.onload = function (event) {
+			console.log('The server sent "', this.responseText, '" newest change.');
+			var json = JSON.parse(this.responseText);
+			var old_word = json[0];
+			var new_word = json[1];
+			var index = json[2];
+			updateText(new_word, index);
+		};
+		xhr.send();
+	}
+</script>
 
 </html>
