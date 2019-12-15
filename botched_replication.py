@@ -214,5 +214,5 @@ if __name__=='__main__':
 	# Pass in the text file name.
 	text = Corpus(r, sys.argv[1])
 	while True:
-		print text.mutate()
+		print(text.mutate())
 		time.sleep(MUTATION_RATE_IN_SECONDS)

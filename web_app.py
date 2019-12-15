@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 
-r = redis.Redis()
+r = redis.Redis(decode_responses=True, encoding=u'utf-8')
 # r = redis.from_url(os.environ.get('REDIS_URL'))
 text = Corpus(r, 'library_of_babel.html')
 
