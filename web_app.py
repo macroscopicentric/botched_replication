@@ -6,8 +6,7 @@ import os
 
 app = Flask(__name__)
 
-r = redis.Redis()
-# r = redis.from_url(os.environ.get('REDIS_URL'))
+r = redis.from_url(os.environ.get('REDIS_URL'))
 text = Corpus(r, 'library_of_babel.html')
 
 @app.route('/')
