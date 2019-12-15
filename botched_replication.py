@@ -37,7 +37,7 @@ class Corpus(object):
 		self.redis = redis_connection
 		self.redis.set(self.redis_original_text_key, raw_text)
 
-		modified_text = self.redis.get(self.redis_modified_text_key)
+		modified_text = self.redis.get(self.redis_modified_text_key).decode('utf-8')
 
 		if modified_text:
 			self.tokens = self.tokenize(modified_text)
@@ -158,7 +158,7 @@ class Corpus(object):
 		'''
 		Fetch current version of modified text from Redis.
 		'''
-		return self.redis.get(self.redis_modified_text_key)
+		return self.redis.get(self.redis_modified_text_key).decode('utf-8')
 
 
 	def save_newest_change(self, newest_change):
