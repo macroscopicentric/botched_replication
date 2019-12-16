@@ -166,7 +166,7 @@ class Corpus(object):
 		Save the newest change as the latest item in the sorted set of changes
 		in Redis.
 		'''
-		self.redis.zadd(self.redis_changes_key, json.dumps(newest_change), time.time())
+		self.redis.zadd(self.redis_changes_key, {json.dumps(newest_change): time.time()}, nx=True)
 
 
 	def fetch_newest_change(self):
